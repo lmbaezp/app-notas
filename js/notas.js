@@ -97,7 +97,7 @@ formulario.addEventListener("submit", function (e) {
                         titleModal.classList.add("d-none");
                         formulario.reset();
                         bootstrap.Modal.getInstance(modalElement)?.hide();
-                        mostrarNotas();                        
+                        mostrarNotas();
                         alertaSimple("success", "La nota ha sido editada exitosamente");
                         return
                     }
@@ -208,9 +208,14 @@ function mostrarNotas() {
             const totalPaginas = Math.ceil(notas.length / notasPorPagina);
             listaNotas.innerHTML += `
             <div class="d-flex justify-content-center align-items-center gap-2 mt-3">
-                <button class="btn btn-info btn-anterior" ${paginaActual === 1 ? 'disabled' : ''} onclick="cambiarPagina(-1)">Anterior</button>
+                <button class="btn btn-anterior" ${paginaActual === 1 ? 'disabled' : ''} onclick="cambiarPagina(-1)">
+                    <i class="bi bi-caret-left-fill me-1"></i>
+                    <span class="fw-bolder">ANTERIOR</span>
+                </button>
                 <span class="fst-italic">Página ${paginaActual} de ${totalPaginas}</span>
-                <button class="btn btn-info btn-siguiente" ${paginaActual === totalPaginas ? 'disabled' : ''} onclick="cambiarPagina(1)">Siguiente</button>
+                <button class="btn btn-siguiente" ${paginaActual === totalPaginas ? 'disabled' : ''} onclick="cambiarPagina(1)">
+                    <span class="fw-bolder">SIGUIENTE</span>
+                    <i class="bi bi-caret-right-fill ms-1"></i>
             </div>`;
         }
     }
@@ -279,7 +284,7 @@ function eliminarNota(id) {
                 if (paginaActual > totalPaginas) {
                     paginaActual = Math.max(1, totalPaginas);
                 }
-                mostrarNotas(); 
+                mostrarNotas();
             }
             alertaSimple("success", "La nota se ha eliminado");
         }
