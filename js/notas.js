@@ -17,7 +17,8 @@ class Nota {
 const formulario = document.getElementById("formNota");
 const listaNotas = document.getElementById("listaNotas");
 const modalElement = document.getElementById('staticBackdrop');
-const closeModal = document.querySelector(".modal-header");
+const titleModal = document.querySelector(".modal-title");
+const closeModal = document.querySelector(".btn-close");
 
 // Este no sirivió porque al colocarlo al inicio la línea 23 el valor queda como null y por eso no lo ejecuta en el submit
 // const modal = bootstrap.Modal.getInstance(document.getElementById('staticBackdrop'));
@@ -67,6 +68,7 @@ formulario.addEventListener("submit", function (e) {
                 mostrarNotas();
                 bootstrap.Modal.getInstance(modalElement)?.hide();
                 closeModal.classList.remove("d-none");
+                titleModal.classList.add("d-none");
 
             } else {
 
@@ -92,6 +94,7 @@ formulario.addEventListener("submit", function (e) {
                         cambiarEstadoBotonSubmit("Agregar nota", "btn-primary", "btn-warning");
                         guardarNotasEnStorage(notas);
                         closeModal.classList.remove("d-none");
+                        titleModal.classList.add("d-none");
                         formulario.reset();
                         bootstrap.Modal.getInstance(modalElement)?.hide();
                         mostrarNotas();                        
@@ -105,6 +108,7 @@ formulario.addEventListener("submit", function (e) {
                         notaEditandoId = null;
                         cambiarEstadoBotonSubmit("Agregar nota", "btn-primary", "btn-warning");
                         closeModal.classList.remove("d-none");
+                        titleModal.classList.add("d-none");
                     }
                 });
             }
@@ -167,8 +171,8 @@ function mostrarNotas() {
                 <td>${nota.fecha}</td>
                 <td>
                     <div class="d-flex justify-content-center gap-2">
-                        <button type="button" class="btn btn-success btn-sm btn-editar" data-bs-toggle="modal" data-bs-target="#staticBackdrop" 
-                        onclick="editarNota('${nota.id}')">
+                        <button type="button" class="btn btn-success btn-sm btn-editar" data-bs-toggle="modal" data-bs-target="#staticBackdrop"
+                         onclick="editarNota('${nota.id}')">
                             <i class="bi bi-pencil-fill"></i>
                         </button>
                         <button type="button" class="btn btn-danger btn-sm btn-eliminar" onclick="eliminarNota('${nota.id}')">
@@ -249,6 +253,7 @@ function editarNota(id) {
 
     cambiarEstadoBotonSubmit("Actualizar nota", "btn-warning", "btn-primary");
     closeModal.classList.add("d-none");
+    titleModal.classList.remove("d-none");
 }
 
 function eliminarNota(id) {
