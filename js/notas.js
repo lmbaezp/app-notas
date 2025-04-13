@@ -17,6 +17,11 @@ class Nota {
 const formulario = document.getElementById("formNota");
 const listaNotas = document.getElementById("listaNotas");
 const modalElement = document.getElementById('staticBackdrop');
+const closeModal = document.querySelector(".modal-header");
+
+// Este no sirivió porque al colocarlo al inicio la línea 23 el valor queda como null y por eso no lo ejecuta en el submit
+// const modal = bootstrap.Modal.getInstance(document.getElementById('staticBackdrop'));
+// modal.hide();
 
 let paginaActual = 1;
 const notasPorPagina = 5;
@@ -45,9 +50,6 @@ formulario.addEventListener("submit", function (e) {
         return
     }
 
-    const modal = bootstrap.Modal.getInstance(document.getElementById('staticBackdrop'));
-    const closeModal = document.querySelector(".modal-header");
-
     if (notaEditandoId) {
         // Estamos actualizando una nota existente
         const nota = notas.find(n => n.id === notaEditandoId);
@@ -58,15 +60,13 @@ formulario.addEventListener("submit", function (e) {
                 nota.tipo === tipo) {
 
                 alertaSimple("info", "No se ha cambiado la información de la nota");
-
+                formulario.reset();
                 notaEditandoId = null;
                 cambiarEstadoBotonSubmit("Agregar nota", "btn-primary", "btn-warning");
                 guardarNotasEnStorage(notas);
                 mostrarNotas();
-                formulario.reset();
-                toggleBotonesEstado(false);
+                bootstrap.Modal.getInstance(modalElement)?.hide();
                 closeModal.classList.remove("d-none");
-                modal.hide();
 
             } else {
 
@@ -78,7 +78,9 @@ formulario.addEventListener("submit", function (e) {
                     confirmButtonColor: "#d33",
                     cancelButtonColor: "#3085d6",
                     confirmButtonText: "Si, editar la nota",
-                    cancelButtonText: "Cancelar edición"
+                    cancelButtonText: "Cancelar edición",
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
                 }).then((result) => {
                     if (result.isConfirmed) {
                         nota.titulo = titulo;
@@ -89,23 +91,19 @@ formulario.addEventListener("submit", function (e) {
                         notaEditandoId = null;
                         cambiarEstadoBotonSubmit("Agregar nota", "btn-primary", "btn-warning");
                         guardarNotasEnStorage(notas);
-                        toggleBotonesEstado(false);
                         closeModal.classList.remove("d-none");
                         formulario.reset();
-                        modal.hide();
+                        bootstrap.Modal.getInstance(modalElement)?.hide();
                         mostrarNotas();                        
-        
                         alertaSimple("success", "La nota ha sido editada exitosamente");
                         return
                     }
                     else {
                         // Usuario canceló la edición
                         formulario.reset();
-                        modal.hide();
+                        bootstrap.Modal.getInstance(modalElement)?.hide();
                         notaEditandoId = null;
                         cambiarEstadoBotonSubmit("Agregar nota", "btn-primary", "btn-warning");
-                        //Habilitar botones
-                        toggleBotonesEstado(false);
                         closeModal.classList.remove("d-none");
                     }
                 });
@@ -117,7 +115,7 @@ formulario.addEventListener("submit", function (e) {
         notas.push(nuevaNota);
         guardarNotasEnStorage(notas);
         formulario.reset();
-        modal.hide();
+        bootstrap.Modal.getInstance(modalElement)?.hide();
         alertaSimple("success", "La nota se ha creado exitosamente");
 
         const totalPaginas = Math.ceil(notas.length / notasPorPagina);
@@ -144,7 +142,6 @@ function cargarNotasDesdeStorage() {
     // Convertimos objetos planos en instancias de Nota
     const objetos = JSON.parse(datos);
     return objetos.map(obj => new Nota(obj.titulo, obj.descripcion, obj.tipo, obj.id, obj.fecha, obj.ediciones ?? 0));
-
 }
 
 function mostrarNotas() {
@@ -206,10 +203,10 @@ function mostrarNotas() {
         if (notas.length > notasPorPagina) {
             const totalPaginas = Math.ceil(notas.length / notasPorPagina);
             listaNotas.innerHTML += `
-            <div class="d-flex justify-content-center gap-2 mt-3">
-                <button class="btn btn-outline-info btn-anterior" ${paginaActual === 1 ? 'disabled' : ''} onclick="cambiarPagina(-1)">Anterior</button>
-                <span class="fw-bold">Página ${paginaActual} de ${totalPaginas}</span>
-                <button class="btn btn-outline-info btn-siguiente" ${paginaActual === totalPaginas ? 'disabled' : ''} onclick="cambiarPagina(1)">Siguiente</button>
+            <div class="d-flex justify-content-center align-items-center gap-2 mt-3">
+                <button class="btn btn-info btn-anterior" ${paginaActual === 1 ? 'disabled' : ''} onclick="cambiarPagina(-1)">Anterior</button>
+                <span class="fst-italic">Página ${paginaActual} de ${totalPaginas}</span>
+                <button class="btn btn-info btn-siguiente" ${paginaActual === totalPaginas ? 'disabled' : ''} onclick="cambiarPagina(1)">Siguiente</button>
             </div>`;
         }
     }
@@ -238,7 +235,7 @@ function cambiarPagina(direccion) {
 
 function editarNota(id) {
     //formulario.scrollIntoView({ behavior: 'smooth' });
-    document.getElementById("titulo").focus();
+    //document.getElementById("titulo").focus();
     const nota = notas.find(n => n.id === id);
     if (!nota) return;
 
@@ -250,13 +247,8 @@ function editarNota(id) {
     // Guardar el id que se está editando
     notaEditandoId = id;
 
-    // Cambiar el botón del formulario
     cambiarEstadoBotonSubmit("Actualizar nota", "btn-warning", "btn-primary");
-
-    //Deshabilitar botones
-    const closeModal = document.querySelector(".modal-header");
     closeModal.classList.add("d-none");
-    toggleBotonesEstado(true, "d-none");
 }
 
 function eliminarNota(id) {
@@ -268,7 +260,9 @@ function eliminarNota(id) {
         confirmButtonColor: "#d33",
         cancelButtonColor: "#3085d6",
         confirmButtonText: "Si, borrar la nota",
-        cancelButtonText: "Conservar la nota"
+        cancelButtonText: "Conservar la nota",
+        allowOutsideClick: false,
+        allowEscapeKey: false,
     }).then((result) => {
         if (result.isConfirmed) {
             // 1. Quitar la nota del array
@@ -280,7 +274,7 @@ function eliminarNota(id) {
                 if (paginaActual > totalPaginas) {
                     paginaActual = Math.max(1, totalPaginas);
                 }
-                mostrarNotas(); // volver a pintar las notas
+                mostrarNotas(); 
             }
             alertaSimple("success", "La nota se ha eliminado");
         }
@@ -296,7 +290,9 @@ function eliminarTodasLasNotas() {
         confirmButtonColor: "#d33",
         cancelButtonColor: "#3085d6",
         confirmButtonText: "Si, borrar la lista de notas",
-        cancelButtonText: "Conservar la lista de notas"
+        cancelButtonText: "Conservar la lista de notas",
+        allowOutsideClick: false,
+        allowEscapeKey: false,
     }).then((result) => {
         if (result.isConfirmed) {
             notas.length = 0;
@@ -318,21 +314,11 @@ function cambiarEstadoBotonSubmit(texto, claseAgregar, claseQuitar) {
     botonSubmit.classList.add(claseAgregar);
 }
 
-function toggleBotonesEstado(disabled, display = "d-inline") {
-    document.querySelectorAll(".btn-anterior, .btn-siguiente").forEach(btn => {
-        btn.classList.add(display);
-    });
-
-    document.querySelectorAll(".btn-eliminar, .btn-editar").forEach(btn => {
-        btn.disabled = disabled;
-    });
-    const btnEliminarTodo = document.querySelector(".btn-eliminar-todo");
-    if (btnEliminarTodo) btnEliminarTodo.disabled = disabled;
-}
-
 function alertaSimple(icono, texto) {
     Swal.fire({
         icon: icono,
         text: texto,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
     });
 }
